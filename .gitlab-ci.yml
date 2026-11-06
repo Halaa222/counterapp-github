@@ -2,10 +2,9 @@ stages:
   - test
   - build
 
-workflow:
-  variables:
-    UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
-    npm_config_cache: "$CI_PROJECT_DIR/.npm"
+variables:
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+  npm_config_cache: "$CI_PROJECT_DIR/.npm"
 
 backend-test:
   stage: test
@@ -29,3 +28,20 @@ backend-test:
     paths:
       - backend/coverage.xml
       - backend/pytest-report.xml
+
+frontend-test:
+  stage: test
+  image: node:22-alpine
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - .npm
+  before_script:
+    - cd frontend
+  script:
+    - npm ci
+    - npm run build
+
+ 
