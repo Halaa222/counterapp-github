@@ -95,3 +95,24 @@ docker-build:
         docker tag "$IMAGE:$SHA_TAG" "$IMAGE:latest"
         docker push "$IMAGE:latest"
       fi
+
+.deploy-job:
+  stage: deploy
+  tags:
+    - shell
+  interruptible: true
+  allow_failure: true
+  resource_group: counter-app-local
+  variables:
+    BACKEND_PORT: 8000
+    FRONTEND_PORT: 3000
+  
+  deploy:
+    extends: .deploy-job
+    script:
+      - bash deploy/deploy.sh
+
+  undeploy:
+    extends: .deploy-job
+    script:
+      - bash deploy/undeploy.sh
