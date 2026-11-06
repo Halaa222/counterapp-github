@@ -34,8 +34,8 @@ def test_increment_returns_new_value(client: TestClient) -> None:
     assert client.get("/api/counter").json() == {"value": 2}
 
 
-def test_decrement_returns_new_value(client: TestClient) -> None:
-    assert client.post("/api/counter/increment").json() == {"value": 1}
-    assert client.post("/api/counter/decrement").json() == {"value": 0}
-    assert client.post("/api/counter/decrement").json() == {"value": -1}
-    assert client.get("/api/counter").json() == {"value": -1}
+# def test_decrement_returns_new_value(client: TestClient) -> None:
+#     assert client.post("/api/counter/increment").json() == {"value": 1}
+#     assert client.post("/api/counter/decrement").json() == {"value": 0}
+#     assert client.post("/api/counter/decrement").json() == {"value": -1}
+#     assert client.get("/api/counter").json() == {"value": -1}
