@@ -1,0 +1,31 @@
+stages:
+  - test
+  - build
+
+workflow:
+  variables:
+    UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+    npm_config_cache: "$CI_PROJECT_DIR/.npm"
+
+backend-test:
+  stage: test
+  image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+  cache:
+    key:
+      files:
+        - backend/uv.lock
+    paths:
+      - .cache/uv
+  before_script:
+    - cd backend
+  script:
+    - uv sync --frozen
+    - uv run ruff check .
+    - uv run ty check
+    - uv run pytest --cov=app --cov-report=xml:coverage.xml --junitxml=pytest-report.xml --junit-prefix=backend
+  artifacts:
+    when: always
+    expire_in: 1 week
+    paths:
+      - backend/coverage.xml
+      - backend/pytest-report.xml
