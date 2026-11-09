@@ -41,3 +41,43 @@ jobs:
             -e CHECK_COMMAND \
             ghcr.io/astral-sh/uv:python3.13-bookworm-slim \
             sh -c 'cp -R /source/. /work/ && uv sync --frozen && sh -c "$CHECK_COMMAND"'
+
+  frontend-build:
+    name: Frontend Build
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build frontend in Docker
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE/frontend:/source:ro" \
+            -w /work \
+            node:22-alpine \
+            sh -c 'cp -R /source/. /work/ && npm ci && npm run build'
+
+  docker-build:
+    name: Docker Build (${{ matrix.service }})
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [backend, frontend]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build Docker image
+        env:
+          SERVICE: ${{ matrix.service }}
+        run: |
+          docker build --pull \
+            -f "$SERVICE/Dockerfile" \
+            -t "counterapp-$SERVICE:github-ci" \
+            "./$SERVICE"
