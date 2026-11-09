@@ -113,3 +113,26 @@ jobs:
             -f backend/Dockerfile.distroless \
             -t counterapp-backend:distroless-ci \
             ./backend
+
+  docker-build-frontend-variants:
+    name: Docker Build (frontend-${{ matrix.variant }})
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [alpine, distroless]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build frontend variant
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          docker build --pull \
+            -f "frontend/Dockerfile.$VARIANT" \
+            -t "counterapp-frontend:$VARIANT-ci" \
+            ./frontend
