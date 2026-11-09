@@ -1,0 +1,43 @@
+name: Python CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-checks:
+    name: ${{ matrix.name }}
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ruff
+            command: uv run ruff check .
+          - name: Ruff Format
+            command: uv run ruff format --check .
+          - name: Ty
+            command: uv run ty check
+          - name: Pytest
+            command: uv run pytest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run check in Docker
+        env:
+          CHECK_COMMAND: ${{ matrix.command }}
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE/backend:/source:ro" \
+            -w /work \
+            -e CHECK_COMMAND \
+            ghcr.io/astral-sh/uv:python3.13-bookworm-slim \
+            sh -c 'cp -R /source/. /work/ && uv sync --frozen && sh -c "$CHECK_COMMAND"'
